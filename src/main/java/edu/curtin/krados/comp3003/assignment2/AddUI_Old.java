@@ -19,13 +19,13 @@ import java.util.ResourceBundle;
  * route ID, the 'from' location, the destination, the departure time, and the duration of the 
  * trip. All of these are dynamically validated.
  */
-public class AddUI
+public class AddUI_Old
 {
     private static final int SPACING = 8;
     private static final String ERROR_STYLE = "-fx-background-color: khaki;";
     
-    private ObservableList<TimetableEntry> entries;
-    private Dialog<TimetableEntry> dialog = null;
+    private ObservableList<TimetableEntry_Old> entries;
+    private Dialog<TimetableEntry_Old> dialog = null;
     private TextField routeIdField = new TextField();
     private TextField fromField = new TextField();
     private TextField destinationField = new TextField();
@@ -34,7 +34,7 @@ public class AddUI
     private List<TextField> fields = List.of(routeIdField, fromField, destinationField, departureTimeField, durationField);
     private ResourceBundle bundle;
             
-    public AddUI(ObservableList<TimetableEntry> entries, ResourceBundle bundle)
+    public AddUI_Old(ObservableList<TimetableEntry_Old> entries, ResourceBundle bundle)
     {
         this.entries = entries;
         this.bundle = bundle;
@@ -126,11 +126,11 @@ public class AddUI
     /**
      * Creates a TimetableEntry object from the field values in the dialog box.
      */
-    private TimetableEntry buildEntry(ButtonType buttonType)
+    private TimetableEntry_Old buildEntry(ButtonType buttonType)
     {
         if(buttonType != ButtonType.OK) { return null; }
         
-        return new TimetableEntry(
+        return new TimetableEntry_Old(
             routeIdField.getText(),
             fromField.getText(),
             destinationField.getText(),

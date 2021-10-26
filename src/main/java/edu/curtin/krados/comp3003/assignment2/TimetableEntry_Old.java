@@ -7,7 +7,7 @@ import java.time.LocalTime;
 /** 
  * Simple model class for representing a (read-only) timetable entry.
  */
-public class TimetableEntry
+public class TimetableEntry_Old
 {
     private final String routeId;
     private final String from;
@@ -15,7 +15,7 @@ public class TimetableEntry
     private final LocalTime departureTime;
     private final Duration duration;
     
-    public TimetableEntry(String routeId, String from, String destination, LocalTime departureTime, Duration duration)
+    public TimetableEntry_Old(String routeId, String from, String destination, LocalTime departureTime, Duration duration)
     {
         this.routeId = routeId;
         this.from = from;

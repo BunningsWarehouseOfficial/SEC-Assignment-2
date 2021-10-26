@@ -12,7 +12,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.Scene;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.time.LocalDateTime;
@@ -29,19 +28,19 @@ import java.util.concurrent.TimeUnit;
  * The table actually displays a filtered subset of the timetable entries, according to which 
  * entries match the search field.
  */
-public class MainUI
+public class MainUI_Old
 {
     private static final int SPACING = 8;
     
     private Stage stage;
-    private ObservableList<TimetableEntry> entries;
-    private LoadSaveUI loadSaveUI;
-    private AddUI addUI;
+    private ObservableList<TimetableEntry_Old> entries;
+    private LoadSaveUI_Old loadSaveUI;
+    private AddUI_Old addUI;
     private TextField statusBar = new TextField();
     private ResourceBundle bundle;
     
-    public MainUI(Stage stage, ObservableList<TimetableEntry> entries, LoadSaveUI loadSaveUI, AddUI addUI,
-                  ResourceBundle bundle)
+    public MainUI_Old(Stage stage, ObservableList<TimetableEntry_Old> entries, LoadSaveUI_Old loadSaveUI, AddUI_Old addUI,
+                      ResourceBundle bundle)
     {
         this.stage = stage;
         this.entries = entries;
@@ -68,7 +67,7 @@ public class MainUI
         addBtn.setOnAction(event -> addUI.addEntry());
         
         // Table and table data
-        var entryTable = new TableView<TimetableEntry>();
+        var entryTable = new TableView<TimetableEntry_Old>();
         var filteredEntries = new FilteredList<>(entries);
         entryTable.setItems(filteredEntries);
         
@@ -78,12 +77,12 @@ public class MainUI
         );
         
         // Table columns
-        TableColumn<TimetableEntry,String> routeIdCol       = new TableColumn<>(bundle.getString("route_tab"));
-        TableColumn<TimetableEntry,String> fromCol          = new TableColumn<>(bundle.getString("from_tab"));
-        TableColumn<TimetableEntry,String> destinationCol   = new TableColumn<>(bundle.getString("destination_tab"));
-        TableColumn<TimetableEntry,String> departureTimeCol = new TableColumn<>(bundle.getString("departure_tab"));
-        TableColumn<TimetableEntry,String> arrivalTimeCol   = new TableColumn<>(bundle.getString("arrival_tab"));
-        TableColumn<TimetableEntry,String> durationCol      = new TableColumn<>(bundle.getString("duration_tab"));
+        TableColumn<TimetableEntry_Old,String> routeIdCol       = new TableColumn<>(bundle.getString("route_tab"));
+        TableColumn<TimetableEntry_Old,String> fromCol          = new TableColumn<>(bundle.getString("from_tab"));
+        TableColumn<TimetableEntry_Old,String> destinationCol   = new TableColumn<>(bundle.getString("destination_tab"));
+        TableColumn<TimetableEntry_Old,String> departureTimeCol = new TableColumn<>(bundle.getString("departure_tab"));
+        TableColumn<TimetableEntry_Old,String> arrivalTimeCol   = new TableColumn<>(bundle.getString("arrival_tab"));
+        TableColumn<TimetableEntry_Old,String> durationCol      = new TableColumn<>(bundle.getString("duration_tab"));
         
         entryTable.getColumns().setAll(List.of(routeIdCol, fromCol, destinationCol, departureTimeCol, arrivalTimeCol, durationCol));
         
@@ -133,7 +132,7 @@ public class MainUI
     }
     
     
-    private boolean matches(TimetableEntry entry, String searchTerm)
+    private boolean matches(TimetableEntry_Old entry, String searchTerm)
     {
         // FIXME: the string matching here isn't properly internationalised.
         
@@ -141,14 +140,14 @@ public class MainUI
                entry.getDestination().toLowerCase().contains(searchTerm.toLowerCase());
     }
 
-    private String getDepartureTimeString(TimetableEntry entry)
+    private String getDepartureTimeString(TimetableEntry_Old entry)
     {
         // FIXME: the time formatting here is not properly internationalised.
         
         return entry.getDepartureTime().toString();
     }
     
-    private String getArrivalTimeString(TimetableEntry entry)
+    private String getArrivalTimeString(TimetableEntry_Old entry)
     {
         // FIXME: need to add 'duration' to 'departureTime' to get the arrival time, and then also 
         // format it in an appropriately internationalised fashion.

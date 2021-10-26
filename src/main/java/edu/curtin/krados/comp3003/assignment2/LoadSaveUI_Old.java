@@ -20,18 +20,18 @@ import java.util.ResourceBundle;
  * both loading and saving, we first display a 'file chooser' window, and then a second dialog box
  * to select the file encoding.
  */
-public class LoadSaveUI
+public class LoadSaveUI_Old
 {
     private static final int SPACING = 8;
     
     private Stage stage;
-    private ObservableList<TimetableEntry> entries;
-    private FileIO fileIO;
+    private ObservableList<TimetableEntry_Old> entries;
+    private FileIO_Old fileIO;
     private FileChooser fileDialog = new FileChooser();
     private Dialog<String> encodingDialog;
     private ResourceBundle bundle;
     
-    public LoadSaveUI(Stage stage, ObservableList<TimetableEntry> entries, FileIO fileIO, ResourceBundle bundle)
+    public LoadSaveUI_Old(Stage stage, ObservableList<TimetableEntry_Old> entries, FileIO_Old fileIO, ResourceBundle bundle)
     {
         this.stage = stage;
         this.entries = entries;
@@ -85,7 +85,7 @@ public class LoadSaveUI
                 {
                     entries.setAll(fileIO.load(f, bundle));
                 }
-                catch(IOException | TimetableFormatException e)
+                catch(IOException | TimetableFormatException_Old e)
                 {
                     new Alert(
                         Alert.AlertType.ERROR, 

@@ -9,14 +9,14 @@ import java.util.*;
 /**
  * Performs the reading/parsing and writing of the CSV files containing timetable entries.
  */
-public class FileIO
+public class FileIO_Old
 {
     /**
      * Loads a bus timetable from a given CSV file.
      */
-    public List<TimetableEntry> load(File file, ResourceBundle bundle) throws IOException, TimetableFormatException
+    public List<TimetableEntry_Old> load(File file, ResourceBundle bundle) throws IOException, TimetableFormatException_Old
     {
-        List<TimetableEntry> entries = new ArrayList<>();
+        List<TimetableEntry_Old> entries = new ArrayList<>();
         try(BufferedReader br = new BufferedReader(new FileReader(file)))
         {
             String line;
@@ -33,16 +33,16 @@ public class FileIO
                         LocalTime departureTime = LocalTime.parse(fields[3]);
                         Duration duration = Duration.ofMinutes(Integer.parseInt(fields[4]));
                         
-                        entries.add(new TimetableEntry(routeId, from, destination, departureTime, duration));
+                        entries.add(new TimetableEntry_Old(routeId, from, destination, departureTime, duration));
                     }
                     catch(DateTimeParseException e)
                     {
-                        throw new TimetableFormatException(String.format(
+                        throw new TimetableFormatException_Old(String.format(
                             bundle.getString("departure_error") + " '%s'", fields[3]), e);
                     }
                     catch(NumberFormatException e)
                     {
-                        throw new TimetableFormatException(String.format(
+                        throw new TimetableFormatException_Old(String.format(
                             bundle.getString("duration_error") + " '%s'", fields[4]), e);
                     }                    
                 }
@@ -54,11 +54,11 @@ public class FileIO
     /**
      * Writes a bus timetable to a given CSV file.
      */
-    public void save(File file, List<TimetableEntry> entries) throws IOException
+    public void save(File file, List<TimetableEntry_Old> entries) throws IOException
     {
         try(PrintWriter pw = new PrintWriter(file))
         {
-            for(TimetableEntry entry : entries)
+            for(TimetableEntry_Old entry : entries)
             {
                 pw.printf("%s,%s,%s,%s,%d\n",
                     entry.getRouteId().replace(",", ""),
