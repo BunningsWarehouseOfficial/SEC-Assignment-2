@@ -28,10 +28,12 @@ public class TextEditorUI extends Application
     }
     
     private TextArea textArea = new TextArea();
+    private LoadSaveUI loadSaveUI;
     
     @Override
     public void start(Stage stage)
     {
+        //Retrieving locale for internationalisation
         ResourceBundle bundle;
         var localeString = getParameters().getNamed().get("locale");
         if(localeString != null)  //E.g. If localeString == 'hr-HR'
@@ -44,14 +46,19 @@ public class TextEditorUI extends Application
             bundle = ResourceBundle.getBundle("bundle");
         }
 
+        //Preparing required objects
+        loadSaveUI = new LoadSaveUI(stage, textArea, new FileIO(), bundle);
+
         stage.setTitle(bundle.getString("main_title"));
         stage.setMinWidth(800);
 
         // Create toolbar
+        Button loadBtn = new Button(bundle.getString("load_btn"));
+        Button saveBtn = new Button(bundle.getString("save_btn"));
         Button btn1 = new Button("Button1"); //TODO: string i18n
         Button btn2 = new Button("Button2"); //TODO: string i18n
         Button btn3 = new Button("Button3"); //TODO: string i18n
-        ToolBar toolBar = new ToolBar(btn1, btn2, btn3);
+        ToolBar toolBar = new ToolBar(loadBtn, saveBtn, btn1, btn2, btn3);
 
         // Subtle user experience tweaks
         toolBar.setFocusTraversable(false);
@@ -65,6 +72,8 @@ public class TextEditorUI extends Application
         Scene scene = new Scene(mainBox);        
         
         // Button event handlers.
+        loadBtn.setOnAction(event -> loadSaveUI.load());
+        saveBtn.setOnAction(event -> loadSaveUI.save());
         btn1.setOnAction(event -> showDialog1());
         btn2.setOnAction(event -> showDialog2());
         btn3.setOnAction(event -> toolBar.getItems().add(new Button("ButtonN"))); //TODO: string i18n
