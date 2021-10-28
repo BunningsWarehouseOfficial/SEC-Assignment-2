@@ -46,13 +46,13 @@ public class LoadSaveUI
             encodingDialog = new Dialog<>();
             encodingDialog.setTitle(bundle.getString("load_save_title"));
             encodingDialog.getDialogPane().setContent(content);
-            encodingDialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);        
+            encodingDialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
             encodingDialog.setResultConverter(
                 btn -> (btn == ButtonType.OK) ? encodingComboBox.getValue() : null);
-            
+
             content.setHgap(SPACING);
             content.getChildren().setAll(new Label(bundle.getString("encoding_label")), encodingComboBox);
-            
+
             encodingComboBox.getItems().setAll("UTF-8", "UTF-16", "UTF-32");
             encodingComboBox.setValue("UTF-8");
         }        
@@ -73,13 +73,11 @@ public class LoadSaveUI
             String encoding = getEncoding();
             if(encoding != null)
             {
-                // FIXME: encoding is not actually used yet. We currently just use the default encoding, whatever the user selects.
-            
                 try
                 {
-                    textArea.setText(fileIO.load(f, bundle));
+                    textArea.setText(fileIO.load(f, encoding, bundle));
                 }
-                catch(IOException | TimetableFormatException_Old e)
+                catch(IOException e)
                 {
                     new Alert(
                         Alert.AlertType.ERROR, 
@@ -104,11 +102,9 @@ public class LoadSaveUI
             String encoding = getEncoding();
             if(encoding != null)
             {
-                // FIXME: encoding is not actually used yet. We currently just save to the default encoding, whatever the user selects.
-                
                 try
                 {
-                    fileIO.save(f, textArea);
+                    fileIO.save(f, encoding, textArea);
                 }
                 catch(IOException e)
                 {
