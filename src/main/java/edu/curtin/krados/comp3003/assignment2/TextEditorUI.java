@@ -9,14 +9,17 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.InputMismatchException;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -55,10 +58,10 @@ public class TextEditorUI extends Application
         // Create toolbar
         Button loadBtn = new Button(bundle.getString("load_btn"));
         Button saveBtn = new Button(bundle.getString("save_btn"));
+        Button loadPluginScriptBtn = new Button(bundle.getString("load_plugin_script_btn"));
         Button btn1 = new Button("Button1"); //TODO: string i18n
-        Button btn2 = new Button("Button2"); //TODO: string i18n
         Button btn3 = new Button("Button3"); //TODO: string i18n
-        ToolBar toolBar = new ToolBar(loadBtn, saveBtn, btn1, btn2, btn3);
+        ToolBar toolBar = new ToolBar(loadBtn, saveBtn, loadPluginScriptBtn, btn1, btn3);
 
         // Subtle user experience tweaks
         toolBar.setFocusTraversable(false);
@@ -74,8 +77,8 @@ public class TextEditorUI extends Application
         // Button event handlers.
         loadBtn.setOnAction(event -> loadSaveUI.load());
         saveBtn.setOnAction(event -> loadSaveUI.save());
+        loadPluginScriptBtn.setOnAction(event -> showPluginsExtensions(bundle));
         btn1.setOnAction(event -> showDialog1());
-        btn2.setOnAction(event -> showDialog2());
         btn3.setOnAction(event -> toolBar.getItems().add(new Button("ButtonN"))); //TODO: string i18n
         
         // TextArea event handlers & caret positioning.
@@ -123,38 +126,23 @@ public class TextEditorUI extends Application
     
     private void showDialog1()
     {
-        // TextInputDialog is a subclass of Dialog that just presents a single text field.
-    
-        var dialog = new TextInputDialog();
-        dialog.setTitle("Text entry dialog box"); //TODO: string i18n
-        dialog.setHeaderText("Enter text"); //TODO: string i18n
-        
-        // 'showAndWait()' opens the dialog and waits for the user to press the 'OK' or 'Cancel' button. It returns an Optional, which is a whole other discussion, but we can call 'orElse(null)' on that to get the actual string entered if the user pressed 'OK', or null if the user pressed 'Cancel'.
-        
-        var inputStr = dialog.showAndWait().orElse(null);
-        if(inputStr != null)
-        {
-            // Alert is another specialised dialog just for displaying a quick message.
-            new Alert(
-                Alert.AlertType.INFORMATION,
-                "You entered '" + inputStr + "'", //TODO: string i18n
-                ButtonType.OK).showAndWait();
-        }
+
     }
-    
-    private void showDialog2()
+
+    //TODO: below functions in new class? LoadPluginsScriptsUI?
+    private void showPluginsExtensions(ResourceBundle bundle)
     {        
-        Button addBtn = new Button("Add..."); //TODO: string i18n
-        Button removeBtn = new Button("Remove..."); //TODO: string i18n
-        ToolBar toolBar = new ToolBar(addBtn, removeBtn);
+        Button addPluginBtn = new Button(bundle.getString("load_plugin_btn"));
+        Button addScriptBtn = new Button(bundle.getString("load_script_btn"));
+        ToolBar toolBar = new ToolBar(addPluginBtn, addScriptBtn);
+
+        addPluginBtn.setOnAction(event -> loadPlugin(bundle));
+        addScriptBtn.setOnAction(event -> System.out.println("add script"));
+//        addPluginBtn.setOnAction(event -> new Alert(Alert.AlertType.INFORMATION, "Add...", ButtonType.OK).showAndWait()); //TODO: string i18n
+//        addScriptBtn.setOnAction(event -> new Alert(Alert.AlertType.INFORMATION, "Remove...", ButtonType.OK).showAndWait()); //TODO: string i18n
         
-        addBtn.setOnAction(event -> new Alert(Alert.AlertType.INFORMATION, "Add...", ButtonType.OK).showAndWait()); //TODO: string i18n
-        removeBtn.setOnAction(event -> new Alert(Alert.AlertType.INFORMATION, "Remove...", ButtonType.OK).showAndWait()); //TODO: string i18n
-        
-        // FYI: 'ObservableList' inherits from the ordinary List interface, but also works as a subject for any 'observer-pattern' purposes; e.g., to allow an on-screen ListView to display any changes made to the list as they are made.
-        
-        ObservableList<String> list = FXCollections.observableArrayList();
-        ListView<String> listView = new ListView<>(list);        
+        ObservableList<String> list = FXCollections.observableArrayList(); //TODO: not string, plugin class?
+        ListView<String> listView = new ListView<>(list);
         list.add("Item 1"); //TODO: string i18n
         list.add("Item 2"); //TODO: string i18n
         list.add("Item 3"); //TODO: string i18n
@@ -164,10 +152,71 @@ public class TextEditorUI extends Application
         box.setCenter(listView);
         
         Dialog dialog = new Dialog();
-        dialog.setTitle("List of things"); //TODO: string i18n
-        dialog.setHeaderText("Here's a list of things"); //TODO: string i18n
+        dialog.setTitle(bundle.getString("load_plugins_scripts_title"));
+        dialog.setHeaderText(bundle.getString("load_plugins_scripts_header"));
         dialog.getDialogPane().setContent(box);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
         dialog.showAndWait();
     }
+
+    private void loadPlugin(ResourceBundle bundle)
+    {
+        var dialog = new TextInputDialog();
+        dialog.setTitle(bundle.getString("load_plugin_title"));
+        dialog.setHeaderText(bundle.getString("load_plugin_header"));
+
+        var inputStr = dialog.showAndWait().orElse(null);
+        if(inputStr != null)
+        {
+            //TODO: Finish
+            try
+            {
+                Class<?> cls = Class.forName(inputStr);
+
+                new Alert(
+                        Alert.AlertType.INFORMATION,
+                        String.format(bundle.getString("load_plugin_success") + "\n%s", inputStr),
+                        ButtonType.OK).showAndWait();
+            }
+            //TODO: Change error messages to be consistent and to be alerts, not prints
+            catch (ReflectiveOperationException | IllegalArgumentException |
+                    NoClassDefFoundError e)
+            {
+                System.out.println(e.getMessage());
+            }
+            //TODO: Change error messages to be consistent and to be alerts, not prints
+            catch (InputMismatchException e)
+            {
+                System.out.println("Error: " + e.getMessage());
+            }
+        }
+    }
+
+//    private void loadScript(ResourceBundle bundle)
+//    {
+//        FileChooser fileDialog = new FileChooser();
+//
+//        fileDialog.setTitle(bundle.getString("load_title"));
+//
+//        File f = fileDialog.showOpenDialog(stage);
+//        if(f != null)
+//        {
+//            String encoding = getEncoding();
+//            if(encoding != null)
+//            {
+//                try
+//                {
+//                    textArea.setText(fileIO.load(f, encoding, bundle));
+//                }
+//                catch(IOException e)
+//                {
+//                    new Alert(
+//                            Alert.AlertType.ERROR,
+//                            String.format(bundle.getString("load_error") + " %s - %s", e.getClass().getName(), e.getMessage()),
+//                            ButtonType.CLOSE
+//                    ).showAndWait();
+//                }
+//            }
+//        }
+//    }
 }
