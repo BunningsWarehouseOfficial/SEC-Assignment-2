@@ -17,7 +17,7 @@ javafx {
 
 application {
 //    mainClass = 'edu.curtin.krados.comp3003.assignment2.BusTimetableApp_Old'
-    mainClass = 'edu.curtin.krados.comp3003.assignment2.TextEditorUI'
+    mainClass = 'texteditor.TextEditorUI'
 }
 
 compileJava {

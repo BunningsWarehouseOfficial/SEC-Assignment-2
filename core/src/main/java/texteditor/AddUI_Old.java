@@ -1,4 +1,4 @@
-package edu.curtin.krados.comp3003.assignment2;
+package texteditor;
 
 import javafx.collections.ObservableList;
 import javafx.scene.control.ButtonType;

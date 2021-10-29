@@ -1,11 +1,6 @@
-package edu.curtin.krados.comp3003.assignment2;
+package texteditor;
 
-import javafx.collections.ObservableList;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -14,27 +9,26 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ResourceBundle;
 
-
 /** 
  * Controls those parts of the user interface relating to loading/saving timetable CSV files. For 
  * both loading and saving, we first display a 'file chooser' window, and then a second dialog box
  * to select the file encoding.
  */
-public class LoadSaveUI_Old
+public class LoadSaveUI
 {
     private static final int SPACING = 8;
-    
+
     private Stage stage;
-    private ObservableList<TimetableEntry_Old> entries;
-    private FileIO_Old fileIO;
+    private TextArea textArea;
+    private FileIO fileIO;
     private FileChooser fileDialog = new FileChooser();
     private Dialog<String> encodingDialog;
     private ResourceBundle bundle;
-    
-    public LoadSaveUI_Old(Stage stage, ObservableList<TimetableEntry_Old> entries, FileIO_Old fileIO, ResourceBundle bundle)
+
+    public LoadSaveUI(Stage stage, TextArea textArea, FileIO fileIO, ResourceBundle bundle)
     {
         this.stage = stage;
-        this.entries = entries;
+        this.textArea = textArea;
         this.fileIO = fileIO;
         this.bundle = bundle;
     }
@@ -52,13 +46,13 @@ public class LoadSaveUI_Old
             encodingDialog = new Dialog<>();
             encodingDialog.setTitle(bundle.getString("load_save_title"));
             encodingDialog.getDialogPane().setContent(content);
-            encodingDialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);        
+            encodingDialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
             encodingDialog.setResultConverter(
                 btn -> (btn == ButtonType.OK) ? encodingComboBox.getValue() : null);
-            
+
             content.setHgap(SPACING);
             content.getChildren().setAll(new Label(bundle.getString("encoding_label")), encodingComboBox);
-            
+
             encodingComboBox.getItems().setAll("UTF-8", "UTF-16", "UTF-32");
             encodingComboBox.setValue("UTF-8");
         }        
@@ -79,13 +73,11 @@ public class LoadSaveUI_Old
             String encoding = getEncoding();
             if(encoding != null)
             {
-                // FIXME: encoding is not actually used yet. We currently just use the default encoding, whatever the user selects.
-            
                 try
                 {
-                    entries.setAll(fileIO.load(f, bundle));
+                    textArea.setText(fileIO.load(f, encoding, bundle));
                 }
-                catch(IOException | TimetableFormatException_Old e)
+                catch(IOException e)
                 {
                     new Alert(
                         Alert.AlertType.ERROR, 
@@ -110,11 +102,9 @@ public class LoadSaveUI_Old
             String encoding = getEncoding();
             if(encoding != null)
             {
-                // FIXME: encoding is not actually used yet. We currently just save to the default encoding, whatever the user selects.
-                
                 try
                 {
-                    fileIO.save(f, entries);
+                    fileIO.save(f, encoding, textArea);
                 }
                 catch(IOException e)
                 {

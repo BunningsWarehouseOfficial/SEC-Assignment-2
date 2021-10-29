@@ -1,1 +1,2 @@
-rootProject.name = 'assignment2'
+rootProject.name = 'texteditor'
+include('core', 'api', 'datePlugin', 'findPlugin')

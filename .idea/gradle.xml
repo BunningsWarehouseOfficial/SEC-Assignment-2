@@ -10,6 +10,10 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/api" />
+            <option value="$PROJECT_DIR$/core" />
+            <option value="$PROJECT_DIR$/datePlugin" />
+            <option value="$PROJECT_DIR$/findPlugin" />
           </set>
         </option>
       </GradleProjectSettings>

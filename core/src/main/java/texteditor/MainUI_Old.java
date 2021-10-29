@@ -1,4 +1,4 @@
-package edu.curtin.krados.comp3003.assignment2;
+package texteditor;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
