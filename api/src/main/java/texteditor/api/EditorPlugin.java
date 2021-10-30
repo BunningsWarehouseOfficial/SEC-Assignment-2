@@ -4,4 +4,5 @@ package texteditor.api;
 public interface EditorPlugin
 {
     void start(Control api);
+    String getDisplayName();
 }

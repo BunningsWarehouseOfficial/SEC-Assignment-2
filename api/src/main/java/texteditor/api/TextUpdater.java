@@ -1,8 +1,9 @@
 package texteditor.api;
 
+import java.util.ResourceBundle;
+
 public interface TextUpdater
 {
-    String updateText();
-
-    int updateCaretPosition();
+    String getUpdatedText(ResourceBundle bundle);
+    int getNewCaretPosition();
 }

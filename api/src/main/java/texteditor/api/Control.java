@@ -3,8 +3,6 @@ package texteditor.api;
 //Implemented by main application
 public interface Control
 {
-    void registerNameGetter(NameGetter callback);
-
     void registerTextUpdater(TextUpdater callback);
     void registerSelectionUpdater(SelectionUpdater callback);
 

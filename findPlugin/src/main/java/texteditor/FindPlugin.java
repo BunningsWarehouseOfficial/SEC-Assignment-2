@@ -10,4 +10,10 @@ public class FindPlugin implements EditorPlugin
     {
 
     }
+
+    @Override
+    public String getDisplayName()
+    {
+        return null;
+    }
 }

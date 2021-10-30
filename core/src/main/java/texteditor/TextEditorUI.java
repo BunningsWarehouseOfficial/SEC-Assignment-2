@@ -16,12 +16,14 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import texteditor.api.EditorPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.InputMismatchException;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 public class TextEditorUI extends Application
 {
@@ -32,6 +34,9 @@ public class TextEditorUI extends Application
     
     private TextArea textArea = new TextArea();
     private LoadSaveUI loadSaveUI;
+    private List<EditorPlugin> plugins;
+    private ToolBar toolBar;
+    private Control api;
     
     @Override
     public void start(Stage stage)
@@ -51,6 +56,8 @@ public class TextEditorUI extends Application
 
         //Preparing required objects
         loadSaveUI = new LoadSaveUI(stage, textArea, new FileIO(), bundle);
+        plugins = new ArrayList<>();
+        api = new Control();
 
         stage.setTitle(bundle.getString("main_title"));
         stage.setMinWidth(800);
@@ -61,7 +68,7 @@ public class TextEditorUI extends Application
         Button loadPluginScriptBtn = new Button(bundle.getString("load_plugin_script_btn"));
         Button btn1 = new Button("Button1"); //TODO: string i18n
         Button btn3 = new Button("Button3"); //TODO: string i18n
-        ToolBar toolBar = new ToolBar(loadBtn, saveBtn, loadPluginScriptBtn, btn1, btn3);
+        toolBar = new ToolBar(loadBtn, saveBtn, loadPluginScriptBtn, btn1, btn3);
 
         // Subtle user experience tweaks
         toolBar.setFocusTraversable(false);
@@ -131,21 +138,24 @@ public class TextEditorUI extends Application
 
     //TODO: below functions in new class? LoadPluginsScriptsUI?
     private void showPluginsExtensions(ResourceBundle bundle)
-    {        
+    {
+        ObservableList<String> list = FXCollections.observableArrayList(); //TODO: not string, plugin class?
+        ListView<String> listView = new ListView<>(list);
+
         Button addPluginBtn = new Button(bundle.getString("load_plugin_btn"));
         Button addScriptBtn = new Button(bundle.getString("load_script_btn"));
         ToolBar toolBar = new ToolBar(addPluginBtn, addScriptBtn);
 
-        addPluginBtn.setOnAction(event -> loadPlugin(bundle));
+        addPluginBtn.setOnAction(event -> loadPlugin(bundle, plugins, list));
         addScriptBtn.setOnAction(event -> System.out.println("add script"));
 //        addPluginBtn.setOnAction(event -> new Alert(Alert.AlertType.INFORMATION, "Add...", ButtonType.OK).showAndWait()); //TODO: string i18n
 //        addScriptBtn.setOnAction(event -> new Alert(Alert.AlertType.INFORMATION, "Remove...", ButtonType.OK).showAndWait()); //TODO: string i18n
-        
-        ObservableList<String> list = FXCollections.observableArrayList(); //TODO: not string, plugin class?
-        ListView<String> listView = new ListView<>(list);
-        list.add("Item 1"); //TODO: string i18n
-        list.add("Item 2"); //TODO: string i18n
-        list.add("Item 3"); //TODO: string i18n
+
+        //Display any pre-loaded plugins
+        for (EditorPlugin p : plugins)
+        {
+            list.add(p.getDisplayName());
+        }
         
         BorderPane box = new BorderPane();
         box.setTop(toolBar);
@@ -159,7 +169,7 @@ public class TextEditorUI extends Application
         dialog.showAndWait();
     }
 
-    private void loadPlugin(ResourceBundle bundle)
+    private void loadPlugin(ResourceBundle bundle, List<EditorPlugin> plugins, ObservableList<String> list)
     {
         var dialog = new TextInputDialog();
         dialog.setTitle(bundle.getString("load_plugin_title"));
@@ -172,22 +182,41 @@ public class TextEditorUI extends Application
             try
             {
                 Class<?> cls = Class.forName(inputStr);
+                //TODO: Check to make sure that the class inherits from EditorPlugin
+                Constructor<?> constructor = cls.getConstructor();
+                Method nameMethod = cls.getMethod("getDisplayName");
+                if (Modifier.isStatic(nameMethod.getModifiers()))
+                {
+                    throw new IllegalArgumentException("Couldn't find non-static getDisplayName() method");
+                } //TODO: i18n
+                Method startMethod = cls.getMethod("start", texteditor.api.Control.class);
+                if (Modifier.isStatic(startMethod.getModifiers()))
+                {
+                    throw new IllegalArgumentException("Couldn't find non-static start() method");
+                } //TODO: i18n
 
-                new Alert(
-                        Alert.AlertType.INFORMATION,
+                //Create new button in toolbar
+                Object newPlugin = constructor.newInstance();
+                String displayName = (String)nameMethod.invoke(newPlugin);
+                toolBar.getItems().add(new Button(displayName));
+
+                //Update the plugins list
+                plugins.add((EditorPlugin)newPlugin);
+                list.add(displayName);
+
+                //Start the plugin (registers callbacks)
+                startMethod.invoke(newPlugin, api);
+
+                new Alert(Alert.AlertType.INFORMATION,
                         String.format(bundle.getString("load_plugin_success") + "\n%s", inputStr),
                         ButtonType.OK).showAndWait();
             }
-            //TODO: Change error messages to be consistent and to be alerts, not prints
             catch (ReflectiveOperationException | IllegalArgumentException |
                     NoClassDefFoundError e)
             {
-                System.out.println(e.getMessage());
-            }
-            //TODO: Change error messages to be consistent and to be alerts, not prints
-            catch (InputMismatchException e)
-            {
-                System.out.println("Error: " + e.getMessage());
+                new Alert(Alert.AlertType.ERROR,
+                        String.format(bundle.getString("load_plugin_error") + " %s - %s", e.getClass().getName(),
+                        e.getMessage()), ButtonType.CLOSE).showAndWait();
             }
         }
     }
