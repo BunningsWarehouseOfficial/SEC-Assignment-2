@@ -1,4 +1,4 @@
-package edu.curtin.krados.comp3003.texteditor;
+package texteditor.api;
 
 //Implemented by each plugin
 public interface EditorPlugin

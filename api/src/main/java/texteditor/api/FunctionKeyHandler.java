@@ -1,4 +1,4 @@
-package edu.curtin.krados.comp3003.texteditor;
+package texteditor.api;
 
 public interface FunctionKeyHandler
 {
