@@ -48,12 +48,10 @@ public class TextEditorUI extends Application
     @Override
     public void start(Stage stage)
     {
-        System.out.println(System.getProperty("user.dir")); //
-
         //Retrieving locale for internationalisation
         ResourceBundle bundle;
         var localeString = getParameters().getNamed().get("locale");
-        if(localeString != null)  //E.g. If localeString == 'hr-HR'
+        if(localeString != null) //E.g. If localeString == 'hr-HR'
         {
             Locale locale = Locale.forLanguageTag(localeString);
             bundle = ResourceBundle.getBundle("bundle", locale);
@@ -106,7 +104,7 @@ public class TextEditorUI extends Application
         
         textArea.setText(bundle.getString("default_text"));
 
-        //Parse 'keymap' hotkeys file with custom JavaCC DSL TODO: Put in FileIO?
+        //Parse 'keymap' hotkeys file with custom JavaCC DSL
         try
         {
             InputStream stream = new FileInputStream(keymapFile);
@@ -203,20 +201,20 @@ public class TextEditorUI extends Application
                 Class<?> cls = Class.forName(inputStr);
                 //TODO: Check to make sure that the class inherits from EditorPlugin
                 Constructor<?> constructor = cls.getConstructor();
-                Method nameMethod = cls.getMethod("getDisplayName");
+                Method nameMethod = cls.getMethod("getDisplayName", texteditor.api.Control.class);
                 if (Modifier.isStatic(nameMethod.getModifiers()))
                 {
-                    throw new IllegalArgumentException("Couldn't find non-static getDisplayName() method");
-                } //TODO: i18n
+                    throw new IllegalArgumentException(bundle.getString("getdisplayname_method_error"));
+                }
                 Method startMethod = cls.getMethod("start", texteditor.api.Control.class);
                 if (Modifier.isStatic(startMethod.getModifiers()))
                 {
-                    throw new IllegalArgumentException("Couldn't find non-static start() method");
-                } //TODO: i18n
+                    throw new IllegalArgumentException(bundle.getString("start_method_error"));
+                }
 
                 //Start the plugin (registers callbacks)
                 EditorPlugin newPlugin = (EditorPlugin)constructor.newInstance();
-                String displayName = (String)nameMethod.invoke(newPlugin);
+                String displayName = (String)nameMethod.invoke(newPlugin, api);
                 startMethod.invoke(newPlugin, api);
 
                 //Update the plugins list

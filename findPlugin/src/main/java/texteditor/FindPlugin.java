@@ -5,6 +5,7 @@ import texteditor.api.Control;
 import texteditor.api.EditorPlugin;
 
 import java.text.Normalizer;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class FindPlugin implements EditorPlugin
@@ -17,11 +18,11 @@ public class FindPlugin implements EditorPlugin
             @Override
             public String getButtonName()
             {
-                return "Find"; //TODO: i18n?
+                return getBundle(api).getString("button_name");
             }
 
             @Override
-            public void buttonPressed(ResourceBundle bundle)
+            public void buttonPressed()
             {
                 find(api);
             }
@@ -36,14 +37,16 @@ public class FindPlugin implements EditorPlugin
     }
 
     @Override
-    public String getDisplayName()
+    public String getDisplayName(Control api)
     {
-        return "Finder"; //TODO: i18n?;
+        return getBundle(api).getString("display_name");
     }
 
     private void find(Control api)
     {
-        String prompt     = "Enter your (case sensitive) search term."; //TODO: i18n?
+        ResourceBundle bundle = getBundle(api);
+
+        String prompt     = bundle.getString("find_prompt");
         String searchTerm = Normalizer.normalize(api.requestUserTextInput(prompt), Normalizer.Form.NFKC);
         String text       = api.getText();
         int caretPosition = api.getCaretPosition();
@@ -58,7 +61,21 @@ public class FindPlugin implements EditorPlugin
         }
         else
         {
-            api.promptUser("Search term could not be found after caret position."); //TODO: i18n?
+            api.promptUser(bundle.getString("find_error"));
+        }
+    }
+
+    private ResourceBundle getBundle(Control api)
+    {
+        //Retrieving locale for internationalisation
+        Locale locale = api.getLocale();
+        if(locale != null) //E.g. If localeString == 'hr-HR'
+        {
+            return ResourceBundle.getBundle("findbundle", locale);
+        }
+        else
+        {
+            return ResourceBundle.getBundle("findbundle");
         }
     }
 }

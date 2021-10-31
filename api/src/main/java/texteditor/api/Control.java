@@ -1,9 +1,11 @@
 package texteditor.api;
 
+import java.util.Locale;
+
 //Implemented by main application
 public interface Control
 {
-    String getLocaleString(); //TODO: revisit
+    Locale getLocale();
 
     String getText();
     void updateText(String newText);

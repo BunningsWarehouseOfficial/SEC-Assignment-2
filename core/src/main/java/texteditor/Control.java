@@ -6,6 +6,7 @@ import texteditor.api.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class Control implements texteditor.api.Control
@@ -42,10 +43,9 @@ public class Control implements texteditor.api.Control
     }
 
     @Override
-    public String getLocaleString()
+    public Locale getLocale()
     {
-        //FIXME?
-        return null;
+        return bundle.getLocale();
     }
 
     @Override
@@ -118,6 +118,6 @@ public class Control implements texteditor.api.Control
     {
         Button newButton = new Button(callback.getButtonName());
         Platform.runLater(() -> toolBar.getItems().add(newButton));
-        newButton.setOnAction(event -> callback.buttonPressed(bundle));
+        newButton.setOnAction(event -> callback.buttonPressed());
     }
 }

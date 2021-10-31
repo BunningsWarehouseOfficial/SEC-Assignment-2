@@ -5,6 +5,7 @@ import texteditor.api.*;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class DatePlugin implements EditorPlugin
@@ -17,11 +18,11 @@ public class DatePlugin implements EditorPlugin
             @Override
             public String getButtonName()
             {
-                return "Insert Date"; //TODO: i18n?
+                return getBundle(api).getString("button_name");
             }
 
             @Override
-            public void buttonPressed(ResourceBundle bundle)
+            public void buttonPressed()
             {
                 String oldText = api.getText();
                 int caretPosition = api.getCaretPosition();
@@ -29,7 +30,7 @@ public class DatePlugin implements EditorPlugin
                 //Insert datetime into text
                 ZonedDateTime datetime = ZonedDateTime.now();
                 DateTimeFormatter pattern = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL)
-                        .withLocale(bundle.getLocale()); //TODO: revisit use of bundle vs. Locale vs. locale string
+                        .withLocale(getBundle(api).getLocale());
                 String insertionString = datetime.format(pattern);
                 String newText = oldText.substring(0, caretPosition) + insertionString +
                         oldText.substring(caretPosition);
@@ -43,8 +44,22 @@ public class DatePlugin implements EditorPlugin
     }
 
     @Override
-    public String getDisplayName()
+    public String getDisplayName(Control api)
     {
-        return "Date Insertion Button"; //TODO: i18n?
+        return getBundle(api).getString("display_name");
+    }
+
+    private ResourceBundle getBundle(Control api)
+    {
+        //Retrieving locale for internationalisation
+        Locale locale = api.getLocale();
+        if(locale != null) //E.g. If localeString == 'hr-HR'
+        {
+            return ResourceBundle.getBundle("datebundle", locale);
+        }
+        else
+        {
+            return ResourceBundle.getBundle("datebundle");
+        }
     }
 }
