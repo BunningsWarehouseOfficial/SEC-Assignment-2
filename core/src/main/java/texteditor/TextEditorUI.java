@@ -17,6 +17,8 @@ import javafx.scene.input.KeyCode;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import texteditor.api.EditorPlugin;
+import texteditor.api.FunctionKeyHandler;
+import texteditor.api.TextUpdateHandler;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,9 +68,7 @@ public class TextEditorUI extends Application
         Button loadBtn = new Button(bundle.getString("load_btn"));
         Button saveBtn = new Button(bundle.getString("save_btn"));
         Button loadPluginScriptBtn = new Button(bundle.getString("load_plugin_script_btn"));
-        Button btn1 = new Button("Button1"); //TODO: string i18n
-        Button btn3 = new Button("Button3"); //TODO: string i18n
-        toolBar = new ToolBar(loadBtn, saveBtn, loadPluginScriptBtn, btn1, btn3);
+        toolBar = new ToolBar(loadBtn, saveBtn, loadPluginScriptBtn);
 
         // Subtle user experience tweaks
         toolBar.setFocusTraversable(false);
@@ -85,57 +85,54 @@ public class TextEditorUI extends Application
         loadBtn.setOnAction(event -> loadSaveUI.load());
         saveBtn.setOnAction(event -> loadSaveUI.save());
         loadPluginScriptBtn.setOnAction(event -> showPluginsExtensions(bundle));
-        btn1.setOnAction(event -> showDialog1());
-        btn3.setOnAction(event -> toolBar.getItems().add(new Button("ButtonN"))); //TODO: string i18n
-        
-        // TextArea event handlers & caret positioning.
+
+        //Set up control object for interacting with plugins/scripts via API
+        api = new Control(textArea, toolBar, bundle);
+
+        //Text modification event handler
         textArea.textProperty().addListener((object, oldValue, newValue) -> 
         {
-            System.out.println("caret position is " + textArea.getCaretPosition() + 
-                               "; text is\n---\n" + newValue + "\n---\n");
+            for (TextUpdateHandler h : api.getTextUpdateHandlers())
+            {
+                h.textChanged(oldValue, newValue);
+            }
         });
         
         textArea.setText("This is some\ndemonstration text\nTry pressing F1, ctrl+b, ctrl+shift+b or alt+b.");
         
-        // Example global keypress handler.
+        //Global key press handler.
         scene.setOnKeyPressed(keyEvent -> 
         {
-            // See the documentation for the KeyCode class to see all the available keys.
-            
             KeyCode key = keyEvent.getCode();
             boolean ctrl = keyEvent.isControlDown();
             boolean shift = keyEvent.isShiftDown();
             boolean alt = keyEvent.isAltDown();
         
-            if(key == KeyCode.F1)
+            if (key.isFunctionKey())
             {
-                new Alert(Alert.AlertType.INFORMATION, "F1", ButtonType.OK).showAndWait(); //TODO: string i18n
+                //Function key press handler
+                for (FunctionKeyHandler h : api.getFunctionKeyHandlers())
+                {
+                    h.functionKeyPressed(key.getName());
+                }
             }
-            else if(ctrl && shift && key == KeyCode.B)
+            else if (ctrl && shift && key == KeyCode.B)
             {
                 new Alert(Alert.AlertType.INFORMATION, "ctrl+shift+b", ButtonType.OK).showAndWait(); //TODO: string i18n
             }
-            else if(ctrl && key == KeyCode.B)
+            else if (ctrl && key == KeyCode.B)
             {
                 new Alert(Alert.AlertType.INFORMATION, "ctrl+b", ButtonType.OK).showAndWait(); //TODO: string i18n
             }
-            else if(alt && key == KeyCode.B)
+            else if (alt && key == KeyCode.B)
             {
                 new Alert(Alert.AlertType.INFORMATION, "alt+b", ButtonType.OK).showAndWait(); //TODO: string i18n
             }
         });
-
-        //Set up control object for interacting with plugins/scripts via API
-        api = new Control(textArea, toolBar, bundle);
         
         stage.setScene(scene);
         stage.sizeToScene();
         stage.show();
-    }
-    
-    private void showDialog1()
-    {
-
     }
 
     //TODO: below functions in new class? LoadPluginsScriptsUI?
@@ -172,7 +169,6 @@ public class TextEditorUI extends Application
         var inputStr = dialog.showAndWait().orElse(null);
         if(inputStr != null)
         {
-            //TODO: Finish
             try
             {
                 Class<?> cls = Class.forName(inputStr);
@@ -191,14 +187,8 @@ public class TextEditorUI extends Application
 
                 //Start the plugin (registers callbacks)
                 EditorPlugin newPlugin = (EditorPlugin)constructor.newInstance();
-                System.out.println("1");
                 String displayName = (String)nameMethod.invoke(newPlugin);
-                System.out.println("2");
                 startMethod.invoke(newPlugin, api);
-                System.out.println("3");
-//                Button newButton = new Button(displayName);
-//                toolBar.getItems().add(newButton);
-//                newButton.setOnAction(event -> ); //TODO: Remove from here? not all have button callbacks
 
                 //Update the plugins list
                 plugins.add(newPlugin);

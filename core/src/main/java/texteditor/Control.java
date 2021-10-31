@@ -1,11 +1,10 @@
 package texteditor;
 
 import javafx.application.Platform;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.ToolBar;
+import javafx.scene.control.*;
 import texteditor.api.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -15,7 +14,6 @@ public class Control implements texteditor.api.Control
     private ToolBar toolBar;
     private ResourceBundle bundle;
 
-    private List<SelectionUpdater> selectionUpdaters;
     private List<TextUpdateHandler> textUpdateHandlers;
     private List<FunctionKeyHandler> functionKeyHandlers;
 
@@ -24,6 +22,17 @@ public class Control implements texteditor.api.Control
         this.textArea = textArea;
         this.toolBar = toolBar;
         this.bundle = bundle;
+        textUpdateHandlers = new ArrayList<>();
+        functionKeyHandlers = new ArrayList<>();
+    }
+
+    public List<TextUpdateHandler> getTextUpdateHandlers()
+    {
+        return textUpdateHandlers;
+    }
+    public List<FunctionKeyHandler> getFunctionKeyHandlers()
+    {
+        return functionKeyHandlers;
     }
 
     @Override
@@ -60,22 +69,34 @@ public class Control implements texteditor.api.Control
             textArea.requestFocus();
         });
     }
+    @Override
+    public void updateTextSelection(int start, int end)
+    {
+        Platform.runLater(() -> {
+            textArea.selectRange(start, end);
+            textArea.requestFocus();
+        });
+    }
 
     @Override
-    public void registerUserTextInputCollector(UserTextInputCollector callback)
+    public String requestUserTextInput(String prompt)
     {
-
+        var dialog = new TextInputDialog();
+        dialog.setTitle(bundle.getString("plugin_prompt"));
+        dialog.setHeaderText(prompt);
+        return dialog.showAndWait().orElse(null);
     }
 
     @Override
     public void registerTextUpdateHandler(TextUpdateHandler callback)
     {
-
+        textUpdateHandlers.add(callback);
     }
     @Override
     public void registerFunctionKeyHandler(FunctionKeyHandler callback)
     {
-
+        functionKeyHandlers.add(callback);
+        //TODO (remember to add to relevant call to callbacks in relevant main code)
     }
     @Override
     public void registerButtonPressHandler(ButtonPressHandler callback)

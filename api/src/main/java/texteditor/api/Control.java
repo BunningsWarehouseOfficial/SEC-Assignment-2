@@ -10,12 +10,9 @@ public interface Control
 
     int getCaretPosition();
     void updateCaretPosition(int newPosition);
+    void updateTextSelection(int start, int end);
 
-    //TODO: retrieveSelection() ?
-    //TODO: updateSelection() (what parameters? 2 ints?)
-
-    //TODO: refactor to be like above functions and not a callback?
-    void registerUserTextInputCollector(UserTextInputCollector callback);
+    String requestUserTextInput(String prompt);
 
     void registerTextUpdateHandler(TextUpdateHandler callback);
     void registerFunctionKeyHandler(FunctionKeyHandler callback);
