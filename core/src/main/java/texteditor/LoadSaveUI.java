@@ -59,11 +59,6 @@ public class LoadSaveUI
         return encodingDialog.showAndWait().orElse(null);
     }
 
-    //TODO: docs
-    /**
-     * Asks the user to choose a file to load, then an encoding, then loads the file contents and 
-     * updates the timetable.
-     */
     public void load()
     {
         fileDialog.setTitle(bundle.getString("load_title"));
@@ -90,11 +85,6 @@ public class LoadSaveUI
         }
     }
 
-    //TODO: docs
-    /**
-     * Asks the user to choose a filename to save the timetable under, then an encoding, then 
-     * saves the timetable contents to the chosen file in the chosen encoding.
-     */
     public void save()
     {
         fileDialog.setTitle(bundle.getString("save_title"));

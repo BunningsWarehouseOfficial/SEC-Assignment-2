@@ -5,16 +5,8 @@ import javafx.scene.control.TextArea;
 import java.io.*;
 import java.nio.charset.Charset;
 
-//TODO: docs
-/**
- * Performs the reading/parsing and writing of the CSV files containing timetable entries.
- */
 public class FileIO
 {
-    //TODO: docs
-    /**
-     * Loads a bus timetable from a given CSV file.
-     */
     public String load(File file, String encoding) throws IOException
     {
         StringBuilder text = new StringBuilder();
@@ -30,10 +22,6 @@ public class FileIO
         return text.toString();
     }
 
-    //TODO: docs
-    /**
-     * Writes a bus timetable to a given CSV file.
-     */
     public void save(File file, String encoding, TextArea textArea) throws IOException
     {
         try(PrintWriter pw = new PrintWriter(file, encoding))
