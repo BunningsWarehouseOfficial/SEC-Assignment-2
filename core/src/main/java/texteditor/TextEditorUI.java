@@ -14,14 +14,11 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import texteditor.api.EditorPlugin;
 import texteditor.api.FunctionKeyHandler;
 import texteditor.api.TextUpdateHandler;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -66,7 +63,7 @@ public class TextEditorUI extends Application
         // Create toolbar
         Button loadBtn = new Button(bundle.getString("load_btn"));
         Button saveBtn = new Button(bundle.getString("save_btn"));
-        Button loadPluginScriptBtn = new Button(bundle.getString("load_plugin_script_btn"));
+        Button loadPluginScriptBtn = new Button(bundle.getString("load_extension_btn"));
         toolBar = new ToolBar(loadBtn, saveBtn, loadPluginScriptBtn);
 
         // Subtle user experience tweaks
@@ -83,7 +80,7 @@ public class TextEditorUI extends Application
         // Button event handlers.
         loadBtn.setOnAction(event -> loadSaveUI.load());
         saveBtn.setOnAction(event -> loadSaveUI.save());
-        loadPluginScriptBtn.setOnAction(event -> showPluginsExtensions(bundle));
+        loadPluginScriptBtn.setOnAction(event -> showExtensions(bundle));
 
         //Set up control object for interacting with plugins/scripts via API
         api = new Control(textArea, toolBar, bundle);
@@ -135,7 +132,7 @@ public class TextEditorUI extends Application
     }
 
     //TODO: refactor below functions in new class? LoadPluginsScriptsUI? ExtensionsUI?
-    private void showPluginsExtensions(ResourceBundle bundle)
+    private void showExtensions(ResourceBundle bundle)
     {
         ListView<String> listView = new ListView<>(extensionList);
 
@@ -151,8 +148,8 @@ public class TextEditorUI extends Application
         box.setCenter(listView);
         
         Dialog dialog = new Dialog();
-        dialog.setTitle(bundle.getString("load_plugins_scripts_title"));
-        dialog.setHeaderText(bundle.getString("load_plugins_scripts_header"));
+        dialog.setTitle(bundle.getString("load_extensions_title"));
+        dialog.setHeaderText(bundle.getString("load_extensions_header"));
         dialog.getDialogPane().setContent(box);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
         dialog.showAndWait();

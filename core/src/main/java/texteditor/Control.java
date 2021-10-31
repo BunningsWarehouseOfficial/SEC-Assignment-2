@@ -81,13 +81,13 @@ public class Control implements texteditor.api.Control
     @Override
     public void promptUser(String prompt)
     {
-        new Alert(Alert.AlertType.INFORMATION, prompt, ButtonType.OK).showAndWait();
+        new Alert(Alert.AlertType.ERROR, prompt, ButtonType.OK).showAndWait();
     }
     @Override
     public String requestUserTextInput(String prompt)
     {
         var dialog = new TextInputDialog();
-        dialog.setTitle(bundle.getString("plugin_prompt"));
+        dialog.setTitle(bundle.getString("extension_prompt"));
         dialog.setHeaderText(prompt);
         return dialog.showAndWait().orElse(null);
     }

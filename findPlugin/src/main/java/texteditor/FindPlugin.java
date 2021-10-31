@@ -59,7 +59,7 @@ public class FindPlugin implements EditorPlugin
         }
         else
         {
-            api.promptUser("Search term could not be found after caret position"); //TODO: i18n?
+            api.promptUser("Search term could not be found after caret position."); //TODO: i18n?
         }
     }
 }
