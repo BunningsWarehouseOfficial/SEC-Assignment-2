@@ -79,6 +79,11 @@ public class Control implements texteditor.api.Control
     }
 
     @Override
+    public void promptUser(String prompt)
+    {
+        new Alert(Alert.AlertType.INFORMATION, prompt, ButtonType.OK).showAndWait();
+    }
+    @Override
     public String requestUserTextInput(String prompt)
     {
         var dialog = new TextInputDialog();
@@ -96,7 +101,6 @@ public class Control implements texteditor.api.Control
     public void registerFunctionKeyHandler(FunctionKeyHandler callback)
     {
         functionKeyHandlers.add(callback);
-        //TODO (remember to add to relevant call to callbacks in relevant main code)
     }
     @Override
     public void registerButtonPressHandler(ButtonPressHandler callback)

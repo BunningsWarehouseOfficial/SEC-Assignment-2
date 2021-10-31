@@ -12,6 +12,7 @@ public interface Control
     void updateCaretPosition(int newPosition);
     void updateTextSelection(int start, int end);
 
+    void promptUser(String prompt);
     String requestUserTextInput(String prompt);
 
     void registerTextUpdateHandler(TextUpdateHandler callback);

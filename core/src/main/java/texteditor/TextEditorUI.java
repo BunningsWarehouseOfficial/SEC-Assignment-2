@@ -37,7 +37,7 @@ public class TextEditorUI extends Application
     
     private TextArea textArea = new TextArea();
     private LoadSaveUI loadSaveUI;
-    private List<EditorPlugin> plugins;
+    ObservableList<String> extensionList = FXCollections.observableArrayList();
     private ToolBar toolBar;
     private Control api;
     
@@ -59,7 +59,6 @@ public class TextEditorUI extends Application
 
         //Preparing required objects
         loadSaveUI = new LoadSaveUI(stage, textArea, new FileIO(), bundle);
-        plugins = new ArrayList<>();
 
         stage.setTitle(bundle.getString("main_title"));
         stage.setMinWidth(800);
@@ -135,17 +134,16 @@ public class TextEditorUI extends Application
         stage.show();
     }
 
-    //TODO: below functions in new class? LoadPluginsScriptsUI?
+    //TODO: refactor below functions in new class? LoadPluginsScriptsUI? ExtensionsUI?
     private void showPluginsExtensions(ResourceBundle bundle)
     {
-        ObservableList<String> list = FXCollections.observableArrayList(); //TODO: not string, plugin class?
-        ListView<String> listView = new ListView<>(list);
+        ListView<String> listView = new ListView<>(extensionList);
 
         Button addPluginBtn = new Button(bundle.getString("load_plugin_btn"));
         Button addScriptBtn = new Button(bundle.getString("load_script_btn"));
         ToolBar toolBar = new ToolBar(addPluginBtn, addScriptBtn);
 
-        addPluginBtn.setOnAction(event -> loadPlugin(bundle, plugins, list));
+        addPluginBtn.setOnAction(event -> loadPlugin(bundle, extensionList));
         addScriptBtn.setOnAction(event -> System.out.println("add script"));
         
         BorderPane box = new BorderPane();
@@ -160,7 +158,7 @@ public class TextEditorUI extends Application
         dialog.showAndWait();
     }
 
-    private void loadPlugin(ResourceBundle bundle, List<EditorPlugin> plugins, ObservableList<String> list)
+    private void loadPlugin(ResourceBundle bundle, ObservableList<String> extensionList)
     {
         var dialog = new TextInputDialog();
         dialog.setTitle(bundle.getString("load_plugin_title"));
@@ -191,8 +189,7 @@ public class TextEditorUI extends Application
                 startMethod.invoke(newPlugin, api);
 
                 //Update the plugins list
-                plugins.add(newPlugin);
-                list.add(displayName);
+                extensionList.add(displayName);
 
                 new Alert(Alert.AlertType.INFORMATION,
                         String.format(bundle.getString("load_plugin_success") + "\n%s", inputStr),

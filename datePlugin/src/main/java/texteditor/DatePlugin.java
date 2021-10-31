@@ -9,8 +9,6 @@ import java.util.ResourceBundle;
 
 public class DatePlugin implements EditorPlugin
 {
-    public DatePlugin() { }
-
     @Override
     public void start(Control api)
     {
@@ -31,7 +29,7 @@ public class DatePlugin implements EditorPlugin
                 //Insert datetime into text
                 ZonedDateTime datetime = ZonedDateTime.now();
                 DateTimeFormatter pattern = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL)
-                        .withLocale(bundle.getLocale());
+                        .withLocale(bundle.getLocale()); //TODO: revisit use of bundle vs. Locale vs. locale string
                 String insertionString = datetime.format(pattern);
                 String newText = oldText.substring(0, caretPosition) + insertionString +
                         oldText.substring(caretPosition);
