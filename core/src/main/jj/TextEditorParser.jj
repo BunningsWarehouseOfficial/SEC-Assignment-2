@@ -19,7 +19,6 @@ public class TextEditorParser
 }
 PARSER_END(TextEditorParser)
 
-//SKIP : { " " (~["\""(" ")*"\""]) | "\n" | "\r" | "\t" }
 SKIP : { " " | "\n" | "\r" | "\t" }
 
 TOKEN : {
@@ -47,43 +46,37 @@ void dsl(Control api) :
 }
 {
     (
-//        control(ctrlChars) ["+" control(ctrlChars) ["+" control(ctrlChars)]] "+" key=<LETTERKEY>
-//        control(ctrlChars) ["+" control(ctrlChars)] ["+" control(ctrlChars)] "+" key=<LETTERKEY> "="
-
-//        ((control(ctrlChars) key=<LETTERKEY>)
-//         | (control(ctrlChars) control(ctrlChars) key=<LETTERKEY>)
-//         | (control(ctrlChars) control(ctrlChars) control(ctrlChars) key=<LETTERKEY>)) "="
-        control(ctrlChars) key=<LETTERKEY> "="
-
-//        control(ctrlChars) ("+" control(ctrlChars))* "+" key=<LETTERKEY>
-//        control(ctrlChars) "+" key=<LETTERKEY> "="
-        action=action() str=<STRING> target(api, action, str.image, ctrlChars, key.image)
+        control(ctrlChars) key=<LETTERKEY> "=" action=action() str=<STRING>
+        target(api, action, str.image, ctrlChars, key.image)
+        {
+            //Re-initialise the current control character selection
+            ctrlChars = new HashMap<String, Boolean>();
+            ctrlChars.put("ctrl", false);
+            ctrlChars.put("alt", false);
+            ctrlChars.put("shift", false);
+        }
     )*
     <EOF>
 }
 
 void control(Map<String, Boolean> ctrlChars) :
-{System.out.println("control");} //
+{}
 {
-    //TODO: needs to have at least one of the control keys
     (
         (
             <CTRL>
             {
                 ctrlChars.replace("ctrl", true);
-                System.out.println("ctrl"); //
             }
             |
             <ALT>
             {
                 ctrlChars.replace("alt", true);
-                System.out.println("alt"); //
             }
             |
             <SHIFT>
             {
                 ctrlChars.replace("shift", true);
-                System.out.println("shift"); //
             }
         )
         "+"
@@ -128,47 +121,83 @@ void target(Control api, String action, String str, Map<String, Boolean> ctrlCha
     {
     api.registerHotkeyHandler(new HotkeyHandler() {
         @Override
-        public void hotkeyPressed(List<String> controlKeys, String letterKey)
+        public void hotkeyPressed(List<String> pressedControlKeys, String letterKey)
         {
             //Check if the current pressed keys match those required for this hotkey
             boolean matching = true;
-            for (String s : controlKeys)
+            for (String s : cKeys)
+            {
+                if (!pressedControlKeys.contains(s))
+                {
+                    matching = false;
+                }
+            }
+            for (String s : pressedControlKeys)
             {
                 if (!cKeys.contains(s))
                 {
-                    System.out.println("cKeys match fail: " + s + " not contained in: " + cKeys);
                     matching = false;
                 }
             }
             if (!key.equals(letterKey.toLowerCase()))
             {
-                System.out.println("letterKey match fail: " + key + " == " + letterKey.toLowerCase());
                 matching = false;
             }
 
             if (matching)
             {
-                String subStr = str.substring(1, str.length() - 1); //Exclude the quotation marks
+                int caret, start, end;
+                String oldText, cleanStr, newText;
+
+                oldText = api.getText();
+                caret = api.getCaretPosition();
+                cleanStr = str.substring(1, str.length() - 1); //Exclude the quotation marks
                 if (t.image.equals("at start of line"))
                 {
+                    start = oldText.substring(0, caret).lastIndexOf('\n') + 1;
                     if (action.equals("insert"))
                     {
-                        System.out.println("insert start: '" + subStr + "'");
+                        System.out.println("insert start: '" + cleanStr + "'"); //debug
+
+                        newText = oldText.substring(0, start) + cleanStr + oldText.substring(start);
+                        api.updateText(newText);
+                        api.updateCaretPosition(api.getCaretPosition() + cleanStr.length());
                     }
                     else if (action.equals("delete"))
                     {
-                        System.out.println("delete start: '" + subStr + "'");
+                        System.out.println("delete start: '" + cleanStr + "'"); //debug
+
+                        end = start + cleanStr.length();
+                        if (oldText.substring(start, end).equals(cleanStr))
+                        {
+                            newText = oldText.substring(0, start) + oldText.substring(end);
+                            api.updateText(newText);
+                            api.updateCaretPosition(api.getCaretPosition() - cleanStr.length());
+                        }
                     }
                 }
                 else if (t.image.equals("at caret"))
                 {
+                    start = caret;
                     if (action.equals("insert"))
                     {
-                        System.out.println("insert caret: '" + subStr + "'");
+                        System.out.println("insert caret: '" + cleanStr + "'"); //debug
+
+                        newText = oldText.substring(0, start) + cleanStr + oldText.substring(start);
+                        api.updateText(newText);
+                        api.updateCaretPosition(start);
                     }
                     else if (action.equals("delete"))
                     {
-                        System.out.println("delete start: '" + subStr + "'");
+                        System.out.println("delete caret: '" + cleanStr + "'"); //debug
+
+                        end = start + cleanStr.length();
+                        if (end <= oldText.length() && oldText.substring(start, end).equals(cleanStr))
+                        {
+                            newText = oldText.substring(0, start) + oldText.substring(end);
+                            api.updateText(newText);
+                            api.updateCaretPosition(start);
+                        }
                     }
                 }
             }

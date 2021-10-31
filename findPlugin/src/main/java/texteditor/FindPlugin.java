@@ -43,7 +43,7 @@ public class FindPlugin implements EditorPlugin
 
     private void find(Control api)
     {
-        String prompt     = "Enter your search term."; //TODO: i18n?
+        String prompt     = "Enter your (case sensitive) search term."; //TODO: i18n?
         String searchTerm = Normalizer.normalize(api.requestUserTextInput(prompt), Normalizer.Form.NFKC);
         String text       = api.getText();
         int caretPosition = api.getCaretPosition();

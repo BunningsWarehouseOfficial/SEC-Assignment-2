@@ -104,7 +104,7 @@ public class TextEditorUI extends Application
             }
         });
         
-        textArea.setText("This is some\ndemonstration text\nTry pressing F1, ctrl+b, ctrl+shift+b or alt+b.");
+        textArea.setText(bundle.getString("default_text"));
 
         //Parse 'keymap' hotkeys file with custom JavaCC DSL TODO: Put in FileIO?
         try
@@ -158,18 +158,6 @@ public class TextEditorUI extends Application
                     h.hotkeyPressed(cKeys, key.getName());
                 }
             }
-//            else if (ctrl && shift && key == KeyCode.B)
-//            {
-//                new Alert(Alert.AlertType.INFORMATION, "ctrl+shift+b", ButtonType.OK).showAndWait(); //TODO: string i18n
-//            }
-//            else if (ctrl && key == KeyCode.B)
-//            {
-//                new Alert(Alert.AlertType.INFORMATION, "ctrl+b", ButtonType.OK).showAndWait(); //TODO: string i18n
-//            }
-//            else if (alt && key == KeyCode.B)
-//            {
-//                new Alert(Alert.AlertType.INFORMATION, "alt+b", ButtonType.OK).showAndWait(); //TODO: string i18n
-//            }
         });
         
         stage.setScene(scene);
