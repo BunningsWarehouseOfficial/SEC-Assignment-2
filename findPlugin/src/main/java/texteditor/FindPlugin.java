@@ -4,6 +4,7 @@ import texteditor.api.ButtonPressHandler;
 import texteditor.api.Control;
 import texteditor.api.EditorPlugin;
 
+import java.text.Normalizer;
 import java.util.ResourceBundle;
 
 public class FindPlugin implements EditorPlugin
@@ -42,15 +43,15 @@ public class FindPlugin implements EditorPlugin
 
     private void find(Control api)
     {
-        String prompt     = "Enter your search term"; //TODO: i18n?
-        String searchTerm = api.requestUserTextInput(prompt);
+        String prompt     = "Enter your search term."; //TODO: i18n?
+        String searchTerm = Normalizer.normalize(api.requestUserTextInput(prompt), Normalizer.Form.NFKC);
         String text       = api.getText();
         int caretPosition = api.getCaretPosition();
 
-        //TODO: normalisation? check announcements/notes/discord
+        //TODO: Normalisation of original text for search ﬀ
 
-        String searchSpace = text.substring(caretPosition);
-        int start = searchSpace.indexOf(searchTerm);
+        String searchSpace = Normalizer.normalize(text.substring(caretPosition), Normalizer.Form.NFKC);
+        int start = searchSpace.indexOf(searchTerm); //Search for the term and return its position
         if (start != -1)
         {
             start += caretPosition;
