@@ -17,8 +17,12 @@ import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import texteditor.api.EditorPlugin;
 import texteditor.api.FunctionKeyHandler;
+import texteditor.api.HotkeyHandler;
 import texteditor.api.TextUpdateHandler;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,8 +35,11 @@ public class TextEditorUI extends Application
     {
         Application.launch(args);
     }
-    
+
+    private final String keymapFile = "keymap";
+
     private TextArea textArea = new TextArea();
+    private FileIO fileIO;
     private LoadSaveUI loadSaveUI;
     ObservableList<String> extensionList = FXCollections.observableArrayList();
     private ToolBar toolBar;
@@ -41,6 +48,8 @@ public class TextEditorUI extends Application
     @Override
     public void start(Stage stage)
     {
+        System.out.println(System.getProperty("user.dir")); //
+
         //Retrieving locale for internationalisation
         ResourceBundle bundle;
         var localeString = getParameters().getNamed().get("locale");
@@ -55,7 +64,8 @@ public class TextEditorUI extends Application
         }
 
         //Preparing required objects
-        loadSaveUI = new LoadSaveUI(stage, textArea, new FileIO(), bundle);
+        fileIO = new FileIO();
+        loadSaveUI = new LoadSaveUI(stage, textArea, fileIO, bundle);
 
         stage.setTitle(bundle.getString("main_title"));
         stage.setMinWidth(800);
@@ -95,7 +105,22 @@ public class TextEditorUI extends Application
         });
         
         textArea.setText("This is some\ndemonstration text\nTry pressing F1, ctrl+b, ctrl+shift+b or alt+b.");
-        
+
+        //Parse 'keymap' hotkeys file with custom JavaCC DSL TODO: Put in FileIO?
+        try
+        {
+            InputStream stream = new FileInputStream(keymapFile);
+            TextEditorParser.parse(keymapFile, api, stream);
+        }
+        catch (IOException | ParseException e)
+        {
+            System.out.println(String.format(bundle.getString("parser_error") + " %s - %s", e.getClass().getName(),
+                    e.getMessage()));
+            new Alert(Alert.AlertType.ERROR,
+                    String.format(bundle.getString("parser_error") + " %s - %s", e.getClass().getName(),
+                    e.getMessage()), ButtonType.CLOSE).showAndWait();
+        } //TODO: InvocationTargetException for incorrect DSL syntax?
+
         //Global key press handler.
         scene.setOnKeyPressed(keyEvent -> 
         {
@@ -112,18 +137,39 @@ public class TextEditorUI extends Application
                     h.functionKeyPressed(key.getName());
                 }
             }
-            else if (ctrl && shift && key == KeyCode.B)
+            else
             {
-                new Alert(Alert.AlertType.INFORMATION, "ctrl+shift+b", ButtonType.OK).showAndWait(); //TODO: string i18n
+                List<String> cKeys = new LinkedList<>();
+                if (ctrl)
+                {
+                    cKeys.add("ctrl");
+                }
+                if (alt)
+                {
+                    cKeys.add("alt");
+                }
+                if (shift)
+                {
+                    cKeys.add("shift");
+                }
+
+                for (HotkeyHandler h : api.getHotkeyHandlers())
+                {
+                    h.hotkeyPressed(cKeys, key.getName());
+                }
             }
-            else if (ctrl && key == KeyCode.B)
-            {
-                new Alert(Alert.AlertType.INFORMATION, "ctrl+b", ButtonType.OK).showAndWait(); //TODO: string i18n
-            }
-            else if (alt && key == KeyCode.B)
-            {
-                new Alert(Alert.AlertType.INFORMATION, "alt+b", ButtonType.OK).showAndWait(); //TODO: string i18n
-            }
+//            else if (ctrl && shift && key == KeyCode.B)
+//            {
+//                new Alert(Alert.AlertType.INFORMATION, "ctrl+shift+b", ButtonType.OK).showAndWait(); //TODO: string i18n
+//            }
+//            else if (ctrl && key == KeyCode.B)
+//            {
+//                new Alert(Alert.AlertType.INFORMATION, "ctrl+b", ButtonType.OK).showAndWait(); //TODO: string i18n
+//            }
+//            else if (alt && key == KeyCode.B)
+//            {
+//                new Alert(Alert.AlertType.INFORMATION, "alt+b", ButtonType.OK).showAndWait(); //TODO: string i18n
+//            }
         });
         
         stage.setScene(scene);

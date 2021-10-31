@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.10'
+    id 'com.intershop.gradle.javacc' version '4.0.1'
 }
 
 repositories {
@@ -19,10 +20,19 @@ javafx {
 }
 
 application {
-//    mainClass = 'edu.curtin.krados.comp3003.assignment2.BusTimetableApp_Old'
     mainClass = 'texteditor.TextEditorUI'
 }
 
 compileJava {
     options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+
+javacc {
+    configs {
+        createmyparser {
+            inputFile = file('src/main/jj/TextEditorParser.jj')
+            packageName = 'texteditor'
+            //lookahead = '2'
+        }
+    }
 }

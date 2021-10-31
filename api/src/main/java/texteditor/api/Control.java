@@ -17,5 +17,6 @@ public interface Control
 
     void registerTextUpdateHandler(TextUpdateHandler callback);
     void registerFunctionKeyHandler(FunctionKeyHandler callback);
+    void registerHotkeyHandler(HotkeyHandler callback);
     void registerButtonPressHandler(ButtonPressHandler callback);
 }

@@ -3,10 +3,7 @@ package texteditor;
 import javafx.scene.control.TextArea;
 
 import java.io.*;
-import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.ResourceBundle;
 
 //TODO: docs
 /**
@@ -18,7 +15,7 @@ public class FileIO
     /**
      * Loads a bus timetable from a given CSV file.
      */
-    public String load(File file, String encoding, ResourceBundle bundle) throws IOException
+    public String load(File file, String encoding) throws IOException
     {
         StringBuilder text = new StringBuilder();
         try(BufferedReader br = new BufferedReader(new FileReader(file, Charset.forName(encoding))))

@@ -59,6 +59,7 @@ public class LoadSaveUI
         return encodingDialog.showAndWait().orElse(null);
     }
 
+    //TODO: docs
     /**
      * Asks the user to choose a file to load, then an encoding, then loads the file contents and 
      * updates the timetable.
@@ -75,7 +76,7 @@ public class LoadSaveUI
             {
                 try
                 {
-                    textArea.setText(fileIO.load(f, encoding, bundle));
+                    textArea.setText(fileIO.load(f, encoding));
                 }
                 catch(IOException e)
                 {
@@ -88,7 +89,8 @@ public class LoadSaveUI
             }
         }
     }
-    
+
+    //TODO: docs
     /**
      * Asks the user to choose a filename to save the timetable under, then an encoding, then 
      * saves the timetable contents to the chosen file in the chosen encoding.

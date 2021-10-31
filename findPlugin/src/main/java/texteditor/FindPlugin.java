@@ -48,8 +48,6 @@ public class FindPlugin implements EditorPlugin
         String text       = api.getText();
         int caretPosition = api.getCaretPosition();
 
-        //TODO: Normalisation of original text for search ﬀ
-
         String searchSpace = Normalizer.normalize(text.substring(caretPosition), Normalizer.Form.NFKC);
         int start = searchSpace.indexOf(searchTerm); //Search for the term and return its position
         if (start != -1)

@@ -16,6 +16,7 @@ public class Control implements texteditor.api.Control
 
     private List<TextUpdateHandler> textUpdateHandlers;
     private List<FunctionKeyHandler> functionKeyHandlers;
+    private List<HotkeyHandler> hotkeyHandlers;
 
     public Control(TextArea textArea, ToolBar toolBar, ResourceBundle bundle)
     {
@@ -24,6 +25,7 @@ public class Control implements texteditor.api.Control
         this.bundle = bundle;
         textUpdateHandlers = new ArrayList<>();
         functionKeyHandlers = new ArrayList<>();
+        hotkeyHandlers = new ArrayList<>();
     }
 
     public List<TextUpdateHandler> getTextUpdateHandlers()
@@ -33,6 +35,10 @@ public class Control implements texteditor.api.Control
     public List<FunctionKeyHandler> getFunctionKeyHandlers()
     {
         return functionKeyHandlers;
+    }
+    public List<HotkeyHandler> getHotkeyHandlers()
+    {
+        return hotkeyHandlers;
     }
 
     @Override
@@ -101,6 +107,11 @@ public class Control implements texteditor.api.Control
     public void registerFunctionKeyHandler(FunctionKeyHandler callback)
     {
         functionKeyHandlers.add(callback);
+    }
+    @Override
+    public void registerHotkeyHandler(HotkeyHandler callback)
+    {
+        hotkeyHandlers.add(callback);
     }
     @Override
     public void registerButtonPressHandler(ButtonPressHandler callback)

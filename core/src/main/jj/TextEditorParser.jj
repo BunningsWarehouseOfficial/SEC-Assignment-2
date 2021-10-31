@@ -1,0 +1,178 @@
+options
+{
+
+}
+
+PARSER_BEGIN(TextEditorParser)
+package texteditor;
+import texteditor.api.Control;
+import texteditor.api.HotkeyHandler;
+import java.util.*;
+import java.io.*;
+public class TextEditorParser
+{
+    public static void parse(String filename, Control api, InputStream stream) throws IOException, ParseException
+    {
+        TextEditorParser parser = new TextEditorParser(stream);
+        parser.dsl(api);
+    }
+}
+PARSER_END(TextEditorParser)
+
+//SKIP : { " " (~["\""(" ")*"\""]) | "\n" | "\r" | "\t" }
+SKIP : { " " | "\n" | "\r" | "\t" }
+
+TOKEN : {
+    < STRING: ["\""] (~["\""])* ["\""] > |
+
+    < CTRL: "ctrl" > |
+    < ALT: "alt" > |
+    < SHIFT: "shift" > |
+    < LETTERKEY: ["a"-"z"] > |
+
+    < INSERT: "insert" > |
+    < DELETE: "delete" > |
+    < STARTLINE: "at start of line" > |
+    < CARET: "at caret" >
+}
+
+void dsl(Control api) :
+{
+    Token key, str;
+    String action, target;
+    Map<String, Boolean> ctrlChars = new HashMap<String, Boolean>();
+    ctrlChars.put("ctrl", false);
+    ctrlChars.put("alt", false);
+    ctrlChars.put("shift", false);
+}
+{
+    (
+//        control(ctrlChars) ["+" control(ctrlChars) ["+" control(ctrlChars)]] "+" key=<LETTERKEY>
+//        control(ctrlChars) ["+" control(ctrlChars)] ["+" control(ctrlChars)] "+" key=<LETTERKEY> "="
+
+//        ((control(ctrlChars) key=<LETTERKEY>)
+//         | (control(ctrlChars) control(ctrlChars) key=<LETTERKEY>)
+//         | (control(ctrlChars) control(ctrlChars) control(ctrlChars) key=<LETTERKEY>)) "="
+        control(ctrlChars) key=<LETTERKEY> "="
+
+//        control(ctrlChars) ("+" control(ctrlChars))* "+" key=<LETTERKEY>
+//        control(ctrlChars) "+" key=<LETTERKEY> "="
+        action=action() str=<STRING> target(api, action, str.image, ctrlChars, key.image)
+    )*
+    <EOF>
+}
+
+void control(Map<String, Boolean> ctrlChars) :
+{System.out.println("control");} //
+{
+    //TODO: needs to have at least one of the control keys
+    (
+        (
+            <CTRL>
+            {
+                ctrlChars.replace("ctrl", true);
+                System.out.println("ctrl"); //
+            }
+            |
+            <ALT>
+            {
+                ctrlChars.replace("alt", true);
+                System.out.println("alt"); //
+            }
+            |
+            <SHIFT>
+            {
+                ctrlChars.replace("shift", true);
+                System.out.println("shift"); //
+            }
+        )
+        "+"
+    )+
+}
+
+String action() :
+{
+    Token t;
+}
+{
+    t=<INSERT>
+    {
+        return t.image;
+    }
+    |
+    t=<DELETE>
+    {
+        return t.image;
+    }
+}
+
+void target(Control api, String action, String str, Map<String, Boolean> ctrlChars, String key) :
+{
+    Token t;
+    List<String> cKeys = new LinkedList<String>();
+    if (ctrlChars.get("ctrl") == true)
+    {
+        cKeys.add("ctrl");
+    }
+    if (ctrlChars.get("alt") == true)
+    {
+        cKeys.add("alt");
+    }
+    if (ctrlChars.get("shift") == true)
+    {
+        cKeys.add("shift");
+    }
+}
+{
+    (t=<STARTLINE> | t=<CARET>)
+    {
+    api.registerHotkeyHandler(new HotkeyHandler() {
+        @Override
+        public void hotkeyPressed(List<String> controlKeys, String letterKey)
+        {
+            //Check if the current pressed keys match those required for this hotkey
+            boolean matching = true;
+            for (String s : controlKeys)
+            {
+                if (!cKeys.contains(s))
+                {
+                    System.out.println("cKeys match fail: " + s + " not contained in: " + cKeys);
+                    matching = false;
+                }
+            }
+            if (!key.equals(letterKey.toLowerCase()))
+            {
+                System.out.println("letterKey match fail: " + key + " == " + letterKey.toLowerCase());
+                matching = false;
+            }
+
+            if (matching)
+            {
+                String subStr = str.substring(1, str.length() - 1); //Exclude the quotation marks
+                if (t.image.equals("at start of line"))
+                {
+                    if (action.equals("insert"))
+                    {
+                        System.out.println("insert start: '" + subStr + "'");
+                    }
+                    else if (action.equals("delete"))
+                    {
+                        System.out.println("delete start: '" + subStr + "'");
+                    }
+                }
+                else if (t.image.equals("at caret"))
+                {
+                    if (action.equals("insert"))
+                    {
+                        System.out.println("insert caret: '" + subStr + "'");
+                    }
+                    else if (action.equals("delete"))
+                    {
+                        System.out.println("delete start: '" + subStr + "'");
+                    }
+                }
+            }
+        }
+    });
+}
+}
