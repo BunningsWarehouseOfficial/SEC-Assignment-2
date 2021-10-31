@@ -1,4 +1,4 @@
-package texteditor;
+package texteditor.old;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;

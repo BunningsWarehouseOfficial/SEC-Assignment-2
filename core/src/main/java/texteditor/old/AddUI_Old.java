@@ -1,4 +1,4 @@
-package texteditor;
+package texteditor.old;
 
 import javafx.collections.ObservableList;
 import javafx.scene.control.ButtonType;

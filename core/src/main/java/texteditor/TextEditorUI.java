@@ -21,6 +21,7 @@ import texteditor.api.EditorPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -57,7 +58,6 @@ public class TextEditorUI extends Application
         //Preparing required objects
         loadSaveUI = new LoadSaveUI(stage, textArea, new FileIO(), bundle);
         plugins = new ArrayList<>();
-        api = new Control();
 
         stage.setTitle(bundle.getString("main_title"));
         stage.setMinWidth(800);
@@ -96,7 +96,6 @@ public class TextEditorUI extends Application
         });
         
         textArea.setText("This is some\ndemonstration text\nTry pressing F1, ctrl+b, ctrl+shift+b or alt+b.");
-        textArea.selectRange(8, 16); // Select a range of text (and move the caret to the end)
         
         // Example global keypress handler.
         scene.setOnKeyPressed(keyEvent -> 
@@ -125,6 +124,9 @@ public class TextEditorUI extends Application
                 new Alert(Alert.AlertType.INFORMATION, "alt+b", ButtonType.OK).showAndWait(); //TODO: string i18n
             }
         });
+
+        //Set up control object for interacting with plugins/scripts via API
+        api = new Control(textArea, toolBar, bundle);
         
         stage.setScene(scene);
         stage.sizeToScene();
@@ -148,14 +150,6 @@ public class TextEditorUI extends Application
 
         addPluginBtn.setOnAction(event -> loadPlugin(bundle, plugins, list));
         addScriptBtn.setOnAction(event -> System.out.println("add script"));
-//        addPluginBtn.setOnAction(event -> new Alert(Alert.AlertType.INFORMATION, "Add...", ButtonType.OK).showAndWait()); //TODO: string i18n
-//        addScriptBtn.setOnAction(event -> new Alert(Alert.AlertType.INFORMATION, "Remove...", ButtonType.OK).showAndWait()); //TODO: string i18n
-
-        //Display any pre-loaded plugins
-        for (EditorPlugin p : plugins)
-        {
-            list.add(p.getDisplayName());
-        }
         
         BorderPane box = new BorderPane();
         box.setTop(toolBar);
@@ -195,21 +189,30 @@ public class TextEditorUI extends Application
                     throw new IllegalArgumentException("Couldn't find non-static start() method");
                 } //TODO: i18n
 
-                //Create new button in toolbar
-                Object newPlugin = constructor.newInstance();
+                //Start the plugin (registers callbacks)
+                EditorPlugin newPlugin = (EditorPlugin)constructor.newInstance();
+                System.out.println("1");
                 String displayName = (String)nameMethod.invoke(newPlugin);
-                toolBar.getItems().add(new Button(displayName));
+                System.out.println("2");
+                startMethod.invoke(newPlugin, api);
+                System.out.println("3");
+//                Button newButton = new Button(displayName);
+//                toolBar.getItems().add(newButton);
+//                newButton.setOnAction(event -> ); //TODO: Remove from here? not all have button callbacks
 
                 //Update the plugins list
-                plugins.add((EditorPlugin)newPlugin);
+                plugins.add(newPlugin);
                 list.add(displayName);
-
-                //Start the plugin (registers callbacks)
-                startMethod.invoke(newPlugin, api);
 
                 new Alert(Alert.AlertType.INFORMATION,
                         String.format(bundle.getString("load_plugin_success") + "\n%s", inputStr),
                         ButtonType.OK).showAndWait();
+            }
+            catch (InvocationTargetException e)
+            {
+                new Alert(Alert.AlertType.ERROR,
+                        String.format(bundle.getString("load_plugin_error") + " %s - %s",
+                        e.getCause().getClass().getName(), e.getCause().getMessage()), ButtonType.CLOSE).showAndWait();
             }
             catch (ReflectiveOperationException | IllegalArgumentException |
                     NoClassDefFoundError e)

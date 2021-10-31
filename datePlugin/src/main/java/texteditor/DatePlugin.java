@@ -1,9 +1,10 @@
 package texteditor;
 
-import texteditor.api.Control;
-import texteditor.api.EditorPlugin;
-import texteditor.api.TextUpdater;
+import texteditor.api.*;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ResourceBundle;
 
 public class DatePlugin implements EditorPlugin
@@ -13,17 +14,32 @@ public class DatePlugin implements EditorPlugin
     @Override
     public void start(Control api)
     {
-        api.registerTextUpdater(new TextUpdater() {
+        api.registerButtonPressHandler(new ButtonPressHandler()
+        {
             @Override
-            public String getUpdatedText(ResourceBundle bundle)
+            public String getButtonName()
             {
-                return null;
+                return "Insert Date"; //TODO: i18n?
             }
 
             @Override
-            public int getNewCaretPosition()
+            public void buttonPressed(ResourceBundle bundle)
             {
-                return 0;
+                String oldText = api.getText();
+                int caretPosition = api.getCaretPosition();
+
+                //Insert datetime into text
+                ZonedDateTime datetime = ZonedDateTime.now();
+                DateTimeFormatter pattern = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL)
+                        .withLocale(bundle.getLocale());
+                String insertionString = datetime.format(pattern);
+                String newText = oldText.substring(0, caretPosition) + insertionString +
+                        oldText.substring(caretPosition);
+                api.updateText(newText);
+
+                //Move the caret to end of new datetime text
+                int insertionLength = insertionString.length();
+                api.updateCaretPosition(caretPosition + insertionLength);
             }
         });
     }
@@ -31,6 +47,6 @@ public class DatePlugin implements EditorPlugin
     @Override
     public String getDisplayName()
     {
-        return "Insert Date"; //TODO: i18n?
+        return "Date Insertion Button"; //TODO: i18n?
     }
 }

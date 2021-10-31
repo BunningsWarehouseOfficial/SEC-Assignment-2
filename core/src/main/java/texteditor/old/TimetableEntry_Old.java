@@ -1,4 +1,4 @@
-package texteditor;
+package texteditor.old;
 
 import java.time.Duration;
 import java.time.LocalTime;
