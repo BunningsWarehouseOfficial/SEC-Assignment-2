@@ -14,6 +14,7 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import texteditor.api.EditorPlugin;
 import texteditor.api.FunctionKeyHandler;
@@ -41,7 +42,7 @@ public class TextEditorUI extends Application
     private TextArea textArea = new TextArea();
     private FileIO fileIO;
     private LoadSaveUI loadSaveUI;
-    ObservableList<String> extensionList = FXCollections.observableArrayList();
+    private ExtensionsUI extensionsUI;
     private ToolBar toolBar;
     private Control api;
     
@@ -88,10 +89,12 @@ public class TextEditorUI extends Application
         // Button event handlers.
         loadBtn.setOnAction(event -> loadSaveUI.load());
         saveBtn.setOnAction(event -> loadSaveUI.save());
-        loadPluginScriptBtn.setOnAction(event -> showExtensions(bundle));
+        loadPluginScriptBtn.setOnAction(event -> extensionsUI.showExtensions());
 
         //Set up control object for interacting with plugins/scripts via API
         api = new Control(textArea, toolBar, bundle);
+
+        extensionsUI = new ExtensionsUI(stage, textArea, fileIO, api, bundle);
 
         //Text modification event handler
         textArea.textProperty().addListener((object, oldValue, newValue) -> 
@@ -162,109 +165,4 @@ public class TextEditorUI extends Application
         stage.sizeToScene();
         stage.show();
     }
-
-    //TODO: refactor below functions in new class? LoadPluginsScriptsUI? ExtensionsUI?
-    private void showExtensions(ResourceBundle bundle)
-    {
-        ListView<String> listView = new ListView<>(extensionList);
-
-        Button addPluginBtn = new Button(bundle.getString("load_plugin_btn"));
-        Button addScriptBtn = new Button(bundle.getString("load_script_btn"));
-        ToolBar toolBar = new ToolBar(addPluginBtn, addScriptBtn);
-
-        addPluginBtn.setOnAction(event -> loadPlugin(bundle, extensionList));
-        addScriptBtn.setOnAction(event -> System.out.println("add script"));
-        
-        BorderPane box = new BorderPane();
-        box.setTop(toolBar);
-        box.setCenter(listView);
-        
-        Dialog dialog = new Dialog();
-        dialog.setTitle(bundle.getString("load_extensions_title"));
-        dialog.setHeaderText(bundle.getString("load_extensions_header"));
-        dialog.getDialogPane().setContent(box);
-        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
-        dialog.showAndWait();
-    }
-
-    private void loadPlugin(ResourceBundle bundle, ObservableList<String> extensionList)
-    {
-        var dialog = new TextInputDialog();
-        dialog.setTitle(bundle.getString("load_plugin_title"));
-        dialog.setHeaderText(bundle.getString("load_plugin_header"));
-
-        var inputStr = dialog.showAndWait().orElse(null);
-        if(inputStr != null)
-        {
-            try
-            {
-                Class<?> cls = Class.forName(inputStr);
-                //TODO: Check to make sure that the class inherits from EditorPlugin
-                Constructor<?> constructor = cls.getConstructor();
-                Method nameMethod = cls.getMethod("getDisplayName", texteditor.api.Control.class);
-                if (Modifier.isStatic(nameMethod.getModifiers()))
-                {
-                    throw new IllegalArgumentException(bundle.getString("getdisplayname_method_error"));
-                }
-                Method startMethod = cls.getMethod("start", texteditor.api.Control.class);
-                if (Modifier.isStatic(startMethod.getModifiers()))
-                {
-                    throw new IllegalArgumentException(bundle.getString("start_method_error"));
-                }
-
-                //Start the plugin (registers callbacks)
-                EditorPlugin newPlugin = (EditorPlugin)constructor.newInstance();
-                String displayName = (String)nameMethod.invoke(newPlugin, api);
-                startMethod.invoke(newPlugin, api);
-
-                //Update the plugins list
-                extensionList.add(displayName);
-
-                new Alert(Alert.AlertType.INFORMATION,
-                        String.format(bundle.getString("load_plugin_success") + "\n%s", inputStr),
-                        ButtonType.OK).showAndWait();
-            }
-            catch (InvocationTargetException e)
-            {
-                new Alert(Alert.AlertType.ERROR,
-                        String.format(bundle.getString("load_plugin_error") + " %s - %s",
-                        e.getCause().getClass().getName(), e.getCause().getMessage()), ButtonType.CLOSE).showAndWait();
-            }
-            catch (ReflectiveOperationException | IllegalArgumentException |
-                    NoClassDefFoundError e)
-            {
-                new Alert(Alert.AlertType.ERROR,
-                        String.format(bundle.getString("load_plugin_error") + " %s - %s", e.getClass().getName(),
-                        e.getMessage()), ButtonType.CLOSE).showAndWait();
-            }
-        }
-    }
-
-//    private void loadScript(ResourceBundle bundle)
-//    {
-//        FileChooser fileDialog = new FileChooser();
-//
-//        fileDialog.setTitle(bundle.getString("load_title"));
-//
-//        File f = fileDialog.showOpenDialog(stage);
-//        if(f != null)
-//        {
-//            String encoding = getEncoding();
-//            if(encoding != null)
-//            {
-//                try
-//                {
-//                    textArea.setText(fileIO.load(f, encoding, bundle));
-//                }
-//                catch(IOException e)
-//                {
-//                    new Alert(
-//                            Alert.AlertType.ERROR,
-//                            String.format(bundle.getString("load_error") + " %s - %s", e.getClass().getName(), e.getMessage()),
-//                            ButtonType.CLOSE
-//                    ).showAndWait();
-//                }
-//            }
-//        }
-//    }
 }

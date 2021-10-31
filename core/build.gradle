@@ -13,6 +13,7 @@ dependencies {
     implementation project(':api')
     implementation project(':datePlugin')
     implementation project(':findPlugin')
+    implementation 'org.python:jython-standalone:2.7.1'
 }
 
 javafx {
@@ -21,6 +22,10 @@ javafx {
 
 application {
     mainClass = 'texteditor.TextEditorUI'
+}
+
+run {
+    standardInput = System.in
 }
 
 compileJava {
